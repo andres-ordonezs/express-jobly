@@ -59,6 +59,13 @@ router.get("/", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
   if (Object.keys(req.query).length !== 0) {
+    const jsToSql = {numEmployees: "num_employees"};
+    const dataToFilter ={};
+
+    for (key in req.query) {
+      dataToFilter[key] = req.query[key];
+    }
+
     return res.json({length: Object.keys(req.query).length});
   }
 

@@ -13,5 +13,6 @@
       "data": {"minimum": "/minEmployees"}
     }
   },
-  "additionalProperties": false
+  "additionalProperties": false,
+  "required": []
 }

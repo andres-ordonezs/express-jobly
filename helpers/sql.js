@@ -60,12 +60,12 @@ function sqlForFilter(dataToFilter, jsToSql) {
 
   // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
   const cols = keys.map((colName, idx) =>
-    `"${jsToSql[colName] || colName}" ${dataToFilter[colName].method} $${idx + 1}`,
+    `${jsToSql[colName] || colName} ${dataToFilter[colName].method} $${idx + 1}`,
     //['"name" ILIKE $1', '"num_employees" < $2']
   );
 
   return {
-    filterCols: cols.join(" AND "),
+    filterCols: "WHERE " + cols.join(" AND "),
     values: Object.values(dataToFilter).map(obj => obj.data),
   };
 }

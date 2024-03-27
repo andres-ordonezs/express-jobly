@@ -1,5 +1,6 @@
 "use strict";
 
+
 /** Routes for companies. */
 
 const jsonschema = require("jsonschema");
@@ -8,6 +9,8 @@ const express = require("express");
 const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
+
+const { sqlForFilter } = require("../helpers/sql");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -29,7 +32,7 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyNewSchema,
-    {required: true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);
@@ -49,27 +52,66 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * - nameLike (will find case-insensitive, partial matches)
  *
  * Authorization required: none
+ *
+ *
  */
 
 router.get("/", async function (req, res, next) {
-  const results = jsonschema.validate(req.query, companyFilterSchema);
+
+  const { nameLike, minEmployees, maxEmployees } = req.query;
+
+  const results = jsonschema.validate(
+    {
+      nameLike: nameLike,
+      minEmployees: parseInt(minEmployees) || undefined,
+      maxEmployees: parseInt(maxEmployees) || undefined
+    },
+    companyFilterSchema,
+    { required: true });
+
+  console.log("********* maxEmployees: ", req.query);
+
+  let companies;
 
   if (!results.valid) {
     const errs = results.errors.map(e => e.stack);
     throw new BadRequestError(errs);
   }
   if (Object.keys(req.query).length !== 0) {
-    const jsToSql = {numEmployees: "num_employees"};
-    const dataToFilter ={};
 
-    for (key in req.query) {
-      dataToFilter[key] = req.query[key];
+    const jsToSql = {
+      nameLike: "name",
+      minEmployees: "num_employees",
+      maxEmployees: "num_employees"
+    };
+
+    const dataToFilter = {};
+
+    for (const key in req.query) {
+
+      if (key.startsWith("name")) {
+        dataToFilter[key] = { data: `%${req.query[key]}%` };
+        dataToFilter[key].method = "ILIKE";
+
+      } else if (key.startsWith("min")) {
+        dataToFilter[key] = { data: req.query[key] };
+        dataToFilter[key].method = ">=";
+
+      } else if (key.startsWith("max")) {
+        dataToFilter[key] = { data: req.query[key] };
+        dataToFilter[key].method = "<=";
+      };
+
     }
 
-    return res.json({length: Object.keys(req.query).length});
+    const result = sqlForFilter(dataToFilter, jsToSql);
+
+    companies = await Company.findFiltered(result);
+
+  } else {
+    companies = await Company.findAll();
   }
 
-  const companies = await Company.findAll();
   return res.json({ companies });
 });
 
@@ -101,7 +143,7 @@ router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
   const validator = jsonschema.validate(
     req.body,
     companyUpdateSchema,
-    {required:true}
+    { required: true }
   );
   if (!validator.valid) {
     const errs = validator.errors.map(e => e.stack);

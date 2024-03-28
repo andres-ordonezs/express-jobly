@@ -55,36 +55,24 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  // TODO: Change schema to make min and max employees an integer
+  //TODO: q = req.query
+  let { nameLike, minEmployees, maxEmployees, ...rest } = req.query;
+
+  minEmployees = Number(minEmployees) || undefined;
+  maxEmployees = Number(maxEmployees) || undefined;
+
   const results = jsonschema.validate(
-    req.query,
+    { nameLike, minEmployees, maxEmployees, ...rest },
     companyFilterSchema,
     { required: true });
 
-  let companies;
 
   if (!results.valid) {
     const errs = results.errors.map(e => e.stack);
     throw new BadRequestError(errs);
   }
 
-  // TODO: Use Number() instead of parseInt
-  // TODO: Move min < max employees validation to findAll()
-  if (Object.keys(req.query).length !== 0) {
-    if ((req.query.minEmployees && req.query.maxEmployees) &&
-      (parseInt(req.query.minEmployees) > parseInt(req.query.maxEmployees))) {
-      throw new BadRequestError("minEmployees must be less than maxEmployees");
-    }
-
-    const { dataToFilter, jsToSql } = createFilterData(req.query);
-
-    const result = sqlForFilter(dataToFilter, jsToSql);
-
-    companies = await Company.findFiltered(result);
-
-  } else {
-    companies = await Company.findAll();
-  }
+  const companies = await Company.findAll({ nameLike, minEmployees, maxEmployees });
 
   return res.json({ companies });
 });

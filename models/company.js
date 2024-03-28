@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialUpdate, sqlForFilter } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -50,12 +50,21 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
+  /** Find all companies with optional filters:
+   * {nameLike, minEmployees, maxEmployees}.
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+  static async findAll(query = {}) {
+    const {dataToFilter, jsToSql} = Company.createFilterData(query);
+
+    let filter = {filterCols:"", values:[]};
+
+    if(Object.keys(dataToFilter).length !== 0) {
+      filter = sqlForFilter(dataToFilter, jsToSql);
+    }
+
     const companiesRes = await db.query(`
         SELECT handle,
                name,
@@ -63,29 +72,65 @@ class Company {
                num_employees AS "numEmployees",
                logo_url      AS "logoUrl"
         FROM companies
-        ORDER BY name`);
+        ${filter.filterCols}
+        ORDER BY name`,
+        filter.values);
     return companiesRes.rows;
   }
 
-  /** Find filtered companies by
-   * nameLike, minEmployees, or maxEmployees
-   *
-   * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
-   */
-  // TODO: Have only one find() method
-  static async findFiltered(filter) {
-    const companiesRes = await db.query(
-      `SELECT handle,
-              name,
-              description,
-              num_employees AS "numEmployees",
-              logo_url      AS "logoUrl"
-        FROM companies
-        ${filter.filterCols}
-        ORDER BY name`,
-      filter.values);
 
-    return companiesRes.rows;
+  /** Creates data to be used in sqlForFilter
+ *
+ * takes optional query data: {nameLike, minEmployees, maxEmployees}
+ *
+ * returns an object of dataToFilter and jsToSql for sqlForFilter
+ * ex:
+ * {
+ *  dataToFilter: {
+ *    nameLike: {data: "net", method: "ILIKE"},
+ *    minEmployees: {data; 300, method: ">="},
+ *    maxEmployeed: {data: 700, method: "<="}
+ *  },
+ *  jsToSql: {
+ *    nameLike: "name",
+ *    minEmployees: "num_employees",
+ *    maxEmployees: "num_employees"
+ *  }
+ * }
+ *
+ */
+  static createFilterData(queryData) {
+    const jsToSql = {
+      nameLike: "name",
+      minEmployees: "num_employees",
+      maxEmployees: "num_employees"
+    };
+
+    const dataToFilter = {};
+
+    const { nameLike, minEmployees, maxEmployees } = queryData;
+
+    if (minEmployees > maxEmployees) {  //TODO: move into findAll
+      throw new BadRequestError("minEmployees must be less than maxEmployees");
+    }
+
+    if (nameLike) {
+      dataToFilter.nameLike = { data: `%${nameLike}%` };
+      dataToFilter.nameLike.method = "ILIKE";
+    }
+
+    if (minEmployees) {
+      dataToFilter.minEmployees = { data: minEmployees };
+      dataToFilter.minEmployees.method = ">=";
+    }
+
+    if (maxEmployees) {
+      dataToFilter.maxEmployees = { data: maxEmployees };
+      dataToFilter.maxEmployees.method = "<=";
+    };
+
+
+    return { dataToFilter, jsToSql };
   }
 
   /** Given a company handle, return data about company.

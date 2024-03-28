@@ -58,59 +58,18 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  * }
  */
 function sqlForFilter(dataToFilter, jsToSql) {
-  const keys = Object.keys(dataToFilter);       //["name", "minEmployees"]
-  if (keys.length === 0) throw new BadRequestError("No data");
+  const keys = Object.keys(dataToFilter);
 
   //['"name" ILIKE $1', '"num_employees" < $2']
   const cols = keys.map((colName, idx) =>
     `${jsToSql[colName] || colName} ${dataToFilter[colName].method} $${idx + 1}`,
   );
 
-  return {
+  return {  //TODO: ternary operator for potential empty string
     filterCols: "WHERE " + cols.join(" AND "),
     values: Object.values(dataToFilter).map(obj => obj.data),
   };
 }
 
 
-/** Creates data to be used in sqlForFilter
- *
- * takes optional query data: {nameLike, minEmployees, maxEmployees}
- *
- * returns an object of dataToFilter and jsToSql for sqlForFilter
- *
- */
-// TODO: Include examples on docstring + use equal rather than startsWith
-//TODO: Move this method to Company class
-// TODO: Use object destructuring for each key: namelike, etc.
-// TODO: Include min<max employees validation
-function createFilterData(queryData) {
-  const jsToSql = {
-    nameLike: "name",
-    minEmployees: "num_employees",
-    maxEmployees: "num_employees"
-  };
-
-  const dataToFilter = {};
-
-  for (const key in queryData) {
-
-    if (key.startsWith("name")) {
-      dataToFilter[key] = { data: `%${queryData[key]}%` };
-      dataToFilter[key].method = "ILIKE";
-
-    } else if (key.startsWith("min")) {
-      dataToFilter[key] = { data: queryData[key] };
-      dataToFilter[key].method = ">=";
-
-    } else if (key.startsWith("max")) {
-      dataToFilter[key] = { data: queryData[key] };
-      dataToFilter[key].method = "<=";
-    };
-
-  }
-
-  return { dataToFilter, jsToSql };
-}
-
-module.exports = { sqlForPartialUpdate, sqlForFilter, createFilterData };
+module.exports = { sqlForPartialUpdate, sqlForFilter };

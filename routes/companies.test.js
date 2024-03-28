@@ -128,8 +128,7 @@ describe("GET /companies", function () {
     );
     expect(resp.body.error.message).toEqual(
       [
-        "instance.minEmployees does not match pattern \"^\\\\d+$\"",
-        "instance is not allowed to have the additional property \"name\""
+        "instance is not allowed to have the additional property \"name\"",
       ],
     );
     expect(resp.statusCode).toEqual(400);

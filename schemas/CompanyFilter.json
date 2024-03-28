@@ -5,12 +5,10 @@
   "properties": {
     "nameLike": {"type": "string"},
     "minEmployees": {
-      "type": "string",
-      "pattern": "^\\d+$"
+      "type": "integer"
     },
     "maxEmployees": {
-      "type": "string",
-      "pattern": "^\\d+$"
+      "type": "integer"
     }
   },
   "additionalProperties": false,

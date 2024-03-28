@@ -85,17 +85,12 @@ describe("findAll", function () {
       },
     ]);
   });
-});
 
-
-
-/************************************** findFiltered */
-
-describe("findFiltered", function () {
   test("works: all 3 filters", async function () {
-    let companies = await Company.findFiltered({
-      filterCols: `WHERE name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3`,
-      values: ['%C%', '2', '2']
+    let companies = await Company.findAll({
+      nameLike: 'C',
+      minEmployees: 2,
+      maxEmployees: 2
     });
 
     expect(companies).toEqual(
@@ -110,9 +105,8 @@ describe("findFiltered", function () {
   });
 
   test("works: employees <= 2", async function () {
-    let companies = await Company.findFiltered({
-      filterCols: `WHERE num_employees <= $1`,
-      values: ['2']
+    let companies = await Company.findAll({
+      maxEmployees: 2
     });
 
     expect(companies).toEqual(
@@ -251,5 +245,41 @@ describe("remove", function () {
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
+  });
+});
+
+/**************************************** createFilterData */
+
+describe("Test createFilterData", function () {
+  test("Function works given proper data", function () {
+    const queryData = {
+      nameLike: "and",
+      minEmployees: 300,
+      maxEmployees: 700
+    };
+
+    const results = Company.createFilterData(queryData);
+
+    expect(results).toEqual({
+      dataToFilter: {
+        nameLike: {
+          data: '%and%',
+          method: 'ILIKE'
+        },
+        minEmployees: {
+          data: 300,
+          method: ">="
+        },
+        maxEmployees: {
+          data: 700,
+          method: "<="
+        }
+      },
+      jsToSql: {
+        nameLike: "name",
+        minEmployees: "num_employees",
+        maxEmployees: "num_employees"
+      }
+    });
   });
 });

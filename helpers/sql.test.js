@@ -100,38 +100,3 @@ describe("Test sqlForFilter", function () {
     }).toThrow(BadRequestError);
   });
 });
-
-
-describe("Test createFilterData", function () {
-  test("Function works given proper data", function () {
-    const queryData = {
-      nameLike: "and",
-      minEmployees: 300,
-      maxEmployees: 700
-    };
-
-    const results = createFilterData(queryData);
-
-    expect(results).toEqual({
-      dataToFilter: {
-        nameLike: {
-          data: '%and%',
-          method: 'ILIKE'
-        },
-        minEmployees: {
-          data: 300,
-          method: ">="
-        },
-        maxEmployees: {
-          data: 700,
-          method: "<="
-        }
-      },
-      jsToSql: {
-        nameLike: "name",
-        minEmployees: "num_employees",
-        maxEmployees: "num_employees"
-      }
-    });
-  });
-});

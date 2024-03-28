@@ -35,33 +35,35 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   };
 }
 
-// dataToFilter:
-// {
-//   name: {
-//     data: "net",
-//     method: "ILIKE"
-//   },
-//   numEmployees: {
-//     data: 30,
-//     method: "<"
-//   }
-// }
 
-
-// jsToSql:
-// {
-//   numEmployees: "num_employees"
-// }
-
-
+/** Turns JavaScript data into data that can be used with a SQL filter
+ *
+ * Takes an object with data to update (dataToFilter),
+ * ex:
+ * {
+ *  nameLike: {data: "net", method: "ILIKE"}
+ *  minEmployees: {data; 300, method: ">="}
+ * }
+ *
+ * Takes an object of JS variable names as keys and their corresponding SQL
+ * column names as values (jsToSql),
+ * ex: { nameLike: name, minEmployees: employee_num}
+ *
+ * Returns an object that holds a string (filterCols) and an array (values) to be
+ * used in the SQL statement
+ * ex:
+ * {
+ *   filterCols: 'WHERE name ILIKE $1 AND employee_num >= $2',
+ *   values: [net, 300]
+ * }
+ */
 function sqlForFilter(dataToFilter, jsToSql) {
   const keys = Object.keys(dataToFilter);       //["name", "minEmployees"]
   if (keys.length === 0) throw new BadRequestError("No data");
 
-  // {firstName: 'Aliya', age: 32} => ['"first_name"=$1', '"age"=$2']
+  //['"name" ILIKE $1', '"num_employees" < $2']
   const cols = keys.map((colName, idx) =>
     `${jsToSql[colName] || colName} ${dataToFilter[colName].method} $${idx + 1}`,
-    //['"name" ILIKE $1', '"num_employees" < $2']
   );
 
   return {
@@ -70,19 +72,42 @@ function sqlForFilter(dataToFilter, jsToSql) {
   };
 }
 
-//values: ["net", 30]
 
-// Object.values(dataToFilter) === [{
-//   data: "net",
-//   method: "ILIKE"
-// },
-// {
-//   data: 30,
-//   method: "<"
-// }]
+/** Creates data to be used in sqlForFilter
+ *
+ * takes optional query data: {nameLike, minEmployees, maxEmployees}
+ *
+ * returns an object of dataToFilter and jsToSql for sqlForFilter
+ *
+ */
 
+function createFilterData(queryData) {
+  const jsToSql = {
+    nameLike: "name",
+    minEmployees: "num_employees",
+    maxEmployees: "num_employees"
+  };
 
+  const dataToFilter = {};
 
+  for (const key in queryData) {
 
+    if (key.startsWith("name")) {
+      dataToFilter[key] = { data: `%${queryData[key]}%` };
+      dataToFilter[key].method = "ILIKE";
 
-module.exports = { sqlForPartialUpdate, sqlForFilter };
+    } else if (key.startsWith("min")) {
+      dataToFilter[key] = { data: queryData[key] };
+      dataToFilter[key].method = ">=";
+
+    } else if (key.startsWith("max")) {
+      dataToFilter[key] = { data: queryData[key] };
+      dataToFilter[key].method = "<=";
+    };
+
+  }
+
+  return { dataToFilter, jsToSql };
+}
+
+module.exports = { sqlForPartialUpdate, sqlForFilter, createFilterData };

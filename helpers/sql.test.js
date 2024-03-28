@@ -1,7 +1,7 @@
 "use strict";
 
 const { BadRequestError } = require('../expressError');
-const { sqlForPartialUpdate, sqlForFilter } = require('./sql');
+const { sqlForPartialUpdate, sqlForFilter, createFilterData } = require('./sql');
 
 describe("Test sqlForPartialUpdate", function () {
   test("Function works given correct data", function () {
@@ -50,22 +50,88 @@ describe("Test sqlForPartialUpdate", function () {
 describe("Test sqlForFilter", function () {
   test("Function works given proper data", function () {
     const dataToFilter = {
-      name: {
+      nameLike: {
         data: "net",
         method: "ILIKE"
       },
-      numEmployees: {
+      minEmployees: {
         data: 30,
-        method: "<"
+        method: "<="
       }
     };
-    const jsToSql = { numEmployees: "num_employees" };
+    const jsToSql = {
+      nameLike: "name",
+      minEmployees: "num_employees",
+      maxEmployees: "num_employees"
+    };
 
     const results = sqlForFilter(dataToFilter, jsToSql);
 
     expect(results).toEqual({
-      filterCols: '"name" ILIKE $1 AND "num_employees" < $2',
+      filterCols: 'WHERE name ILIKE $1 AND num_employees <= $2',
       values: ["net", 30]
+    });
+  });
+
+  test("Function does not include AND with one piece of data", function () {
+    const dataToFilter = {
+      name: {
+        data: "and",
+        method: "ILIKE"
+      }
+    };
+    const jsToSql = {
+      nameLike: "name",
+      minEmployees: "num_employees",
+      maxEmployees: "num_employees"
+    };
+
+    const results = sqlForFilter(dataToFilter, jsToSql);
+
+    expect(results).toEqual({
+      filterCols: 'WHERE name ILIKE $1',
+      values: ["and"]
+    });
+  });
+
+  test("function throws bad request error if not given data", function () {
+    expect(() => {
+      sqlForPartialUpdate({}, {});
+    }).toThrow(BadRequestError);
+  });
+});
+
+
+describe("Test createFilterData", function () {
+  test("Function works given proper data", function () {
+    const queryData = {
+      nameLike: "and",
+      minEmployees: 300,
+      maxEmployees: 700
+    };
+
+    const results = createFilterData(queryData);
+
+    expect(results).toEqual({
+      dataToFilter: {
+        nameLike: {
+          data: '%and%',
+          method: 'ILIKE'
+        },
+        minEmployees: {
+          data: 300,
+          method: ">="
+        },
+        maxEmployees: {
+          data: 700,
+          method: "<="
+        }
+      },
+      jsToSql: {
+        nameLike: "name",
+        minEmployees: "num_employees",
+        maxEmployees: "num_employees"
+      }
     });
   });
 });

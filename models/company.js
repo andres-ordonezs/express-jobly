@@ -74,20 +74,6 @@ class Company {
    */
 
   static async findFiltered(filter) {
-    console.log("******* filter: ", filter);
-
-    const sqlQuery =
-      `SELECT handle,
-              name,
-              description,
-              num_employees AS "numEmployees",
-              logo_url      AS "logoUrl"
-        FROM companies
-        ${filter.filterCols}
-        ORDER BY name`;
-
-    console.log("sqlQuery: ", sqlQuery);
-
     const companiesRes = await db.query(
       `SELECT handle,
               name,
@@ -98,8 +84,6 @@ class Company {
         ${filter.filterCols}
         ORDER BY name`,
       filter.values);
-
-    // console.log("****** companiesRes: ", companiesRes);
 
     return companiesRes.rows;
   }

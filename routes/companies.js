@@ -10,7 +10,7 @@ const { BadRequestError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
 
-const { sqlForFilter } = require("../helpers/sql");
+const { sqlForFilter, createFilterData } = require("../helpers/sql");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
@@ -52,24 +52,13 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * - nameLike (will find case-insensitive, partial matches)
  *
  * Authorization required: none
- *
- *
  */
 
 router.get("/", async function (req, res, next) {
-
-  const { nameLike, minEmployees, maxEmployees } = req.query;
-
   const results = jsonschema.validate(
-    {
-      nameLike: nameLike,
-      minEmployees: parseInt(minEmployees) || undefined,
-      maxEmployees: parseInt(maxEmployees) || undefined
-    },
+    req.query,
     companyFilterSchema,
     { required: true });
-
-  console.log("********* maxEmployees: ", req.query);
 
   let companies;
 
@@ -78,31 +67,12 @@ router.get("/", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
   if (Object.keys(req.query).length !== 0) {
-
-    const jsToSql = {
-      nameLike: "name",
-      minEmployees: "num_employees",
-      maxEmployees: "num_employees"
-    };
-
-    const dataToFilter = {};
-
-    for (const key in req.query) {
-
-      if (key.startsWith("name")) {
-        dataToFilter[key] = { data: `%${req.query[key]}%` };
-        dataToFilter[key].method = "ILIKE";
-
-      } else if (key.startsWith("min")) {
-        dataToFilter[key] = { data: req.query[key] };
-        dataToFilter[key].method = ">=";
-
-      } else if (key.startsWith("max")) {
-        dataToFilter[key] = { data: req.query[key] };
-        dataToFilter[key].method = "<=";
-      };
-
+    if((req.query.minEmployees && req.query.maxEmployees) &&
+      (parseInt(req.query.minEmployees) > parseInt(req.query.maxEmployees))) {
+        throw new BadRequestError("minEmployees must be less than maxEmployees");
     }
+
+    const {dataToFilter, jsToSql} = createFilterData(req.query);
 
     const result = sqlForFilter(dataToFilter, jsToSql);
 

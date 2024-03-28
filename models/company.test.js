@@ -126,6 +126,15 @@ describe("findAll", function () {
       },]
     );
   });
+
+  test("maxEmployees less than minEmployees", async function () {
+    expect(() => {
+      Company.findAll({
+        minEmployees: 100,
+        maxEmployees: 50
+      }).toThrow(BadRequestError);
+    });
+  });
 });
 
 /************************************** get */
@@ -248,7 +257,7 @@ describe("remove", function () {
   });
 });
 
-/**************************************** createFilterData */
+/**************************************** createWhereClause */
 
 describe("Test createFilterData", function () {
   test("Function works given proper data", function () {
@@ -258,28 +267,18 @@ describe("Test createFilterData", function () {
       maxEmployees: 700
     };
 
-    const results = Company.createFilterData(queryData);
+    const results = Company.createWhereClause(queryData);
 
     expect(results).toEqual({
-      dataToFilter: {
-        nameLike: {
-          data: '%and%',
-          method: 'ILIKE'
-        },
-        minEmployees: {
-          data: 300,
-          method: ">="
-        },
-        maxEmployees: {
-          data: 700,
-          method: "<="
-        }
-      },
-      jsToSql: {
-        nameLike: "name",
-        minEmployees: "num_employees",
-        maxEmployees: "num_employees"
-      }
+      "filterCols": "WHERE name ILIKE $1 AND num_employees >= $2 AND num_employees <= $3",
+      "values": [
+        "%and%",
+        300,
+        700,
+      ]
     });
   });
 });
+
+
+

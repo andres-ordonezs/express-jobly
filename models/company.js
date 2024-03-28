@@ -57,13 +57,12 @@ class Company {
    * */
 
   static async findAll(query = {}) {
-    const {dataToFilter, jsToSql} = Company.createFilterData(query);
 
-    let filter = {filterCols:"", values:[]};
-
-    if(Object.keys(dataToFilter).length !== 0) {
-      filter = sqlForFilter(dataToFilter, jsToSql);
+    if (query.minEmployees > query.maxEmployees) {
+      throw new BadRequestError("minEmployees must be less than maxEmployees");
     }
+
+    const filter = Company.createWhereClause(query);
 
     const companiesRes = await db.query(`
         SELECT handle,
@@ -74,63 +73,54 @@ class Company {
         FROM companies
         ${filter.filterCols}
         ORDER BY name`,
-        filter.values);
+      filter.values);
     return companiesRes.rows;
   }
 
 
-  /** Creates data to be used in sqlForFilter
- *
- * takes optional query data: {nameLike, minEmployees, maxEmployees}
- *
- * returns an object of dataToFilter and jsToSql for sqlForFilter
- * ex:
- * {
- *  dataToFilter: {
- *    nameLike: {data: "net", method: "ILIKE"},
- *    minEmployees: {data; 300, method: ">="},
- *    maxEmployeed: {data: 700, method: "<="}
- *  },
- *  jsToSql: {
- *    nameLike: "name",
- *    minEmployees: "num_employees",
- *    maxEmployees: "num_employees"
- *  }
- * }
- *
- */
-  static createFilterData(queryData) {
-    const jsToSql = {
-      nameLike: "name",
-      minEmployees: "num_employees",
-      maxEmployees: "num_employees"
-    };
+  /** Turns JavaScript data into data that can be used with a SQL filter
+   *
+   * Takes an object with filtered data,
+   * ex:
+   * {
+   *  nameLike: "net"
+   *  minEmployees: 300
+   * }
+   *
+   *
+   * Returns an object that holds a string (filterCols) and an array (values) to be
+   * used in the SQL statement
+   * ex:
+   * {
+   *   filterCols: 'WHERE name ILIKE $1 AND employee_num >= $2',
+   *   values: [net, 300]
+   * }
+   */
+  static createWhereClause({ nameLike, minEmployees, maxEmployees }) {
 
-    const dataToFilter = {};
-
-    const { nameLike, minEmployees, maxEmployees } = queryData;
-
-    if (minEmployees > maxEmployees) {  //TODO: move into findAll
-      throw new BadRequestError("minEmployees must be less than maxEmployees");
-    }
+    const whereClause = [];
+    const values = [];
 
     if (nameLike) {
-      dataToFilter.nameLike = { data: `%${nameLike}%` };
-      dataToFilter.nameLike.method = "ILIKE";
+      values.push(`%${nameLike}%`);
+      whereClause.push(`name ILIKE $${values.length}`);
     }
 
     if (minEmployees) {
-      dataToFilter.minEmployees = { data: minEmployees };
-      dataToFilter.minEmployees.method = ">=";
+      values.push(minEmployees);
+      whereClause.push(`num_employees >= $${values.length}`);
     }
 
     if (maxEmployees) {
-      dataToFilter.maxEmployees = { data: maxEmployees };
-      dataToFilter.maxEmployees.method = "<=";
+      values.push(maxEmployees);
+      whereClause.push(`num_employees <= $${values.length}`);
     };
 
-
-    return { dataToFilter, jsToSql };
+    return {
+      filterCols: (values.length > 0) ?
+        "WHERE " + whereClause.join(" AND ") : "",
+      values: values
+    };
   }
 
   /** Given a company handle, return data about company.

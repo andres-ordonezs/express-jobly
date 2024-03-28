@@ -3,7 +3,9 @@
   "$id": "http://our.company.com/companyNew.schema.json",
   "type": "object",
   "properties": {
-    "nameLike": {"type": "string"},
+    "nameLike": {
+      "type": "string"
+    },
     "minEmployees": {
       "type": "integer"
     },

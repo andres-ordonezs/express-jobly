@@ -57,19 +57,19 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
  *   values: [net, 300]
  * }
  */
-function sqlForFilter(dataToFilter, jsToSql) {
-  const keys = Object.keys(dataToFilter);
+// function sqlForFilter(dataToFilter, jsToSql) {
+//   const keys = Object.keys(dataToFilter);
 
-  //['"name" ILIKE $1', '"num_employees" < $2']
-  const cols = keys.map((colName, idx) =>
-    `${jsToSql[colName] || colName} ${dataToFilter[colName].method} $${idx + 1}`,
-  );
+//   //['"name" ILIKE $1', '"num_employees" < $2']
+//   const cols = keys.map((colName, idx) =>
+//     `${jsToSql[colName] || colName} ${dataToFilter[colName].method} $${idx + 1}`,
+//   );
 
-  return {  //TODO: ternary operator for potential empty string
-    filterCols: "WHERE " + cols.join(" AND "),
-    values: Object.values(dataToFilter).map(obj => obj.data),
-  };
-}
+//   return {
+//     filterCols: (cols.length > 0) ? "WHERE " + cols.join(" AND ") : "",
+//     values: Object.values(dataToFilter).map(obj => obj.data),
+//   };
+// }
 
 
-module.exports = { sqlForPartialUpdate, sqlForFilter };
+module.exports = { sqlForPartialUpdate };

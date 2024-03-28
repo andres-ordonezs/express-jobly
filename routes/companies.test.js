@@ -118,7 +118,7 @@ describe("GET /companies", function () {
     );
     expect(resp.statusCode).toEqual(200);
   });
-
+  // TODO: Be more specific with test naming
   test("Wrong filters passed", async function () {
     const resp = await request(app).get("/companies").query(
       {
@@ -128,7 +128,8 @@ describe("GET /companies", function () {
     );
     expect(resp.body.error.message).toEqual(
       [
-        "instance is not allowed to have the additional property \"name\"",
+        "instance.minEmployees is not of a type(s) integer",
+        "instance is not allowed to have the additional property \"name\""
       ],
     );
     expect(resp.statusCode).toEqual(400);

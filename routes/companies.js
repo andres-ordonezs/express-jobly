@@ -55,14 +55,19 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.get("/", async function (req, res, next) {
-  //TODO: q = req.query
-  let { nameLike, minEmployees, maxEmployees, ...rest } = req.query;
 
-  minEmployees = Number(minEmployees) || undefined;
-  maxEmployees = Number(maxEmployees) || undefined;
+  const query = req.query;
+
+  // let { nameLike, minEmployees, maxEmployees, ...rest } = req.query;
+
+  query.minEmployees = (query.minEmployees) ?
+    Number(query.minEmployees) : undefined;
+
+  query.maxEmployees = (query.maxEmployees) ?
+    Number(query.maxEmployees) : undefined;
 
   const results = jsonschema.validate(
-    { nameLike, minEmployees, maxEmployees, ...rest },
+    query,
     companyFilterSchema,
     { required: true });
 
@@ -72,7 +77,7 @@ router.get("/", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  const companies = await Company.findAll({ nameLike, minEmployees, maxEmployees });
+  const companies = await Company.findAll(query);
 
   return res.json({ companies });
 });

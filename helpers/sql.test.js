@@ -47,56 +47,56 @@ describe("Test sqlForPartialUpdate", function () {
 });
 
 
-describe("Test sqlForFilter", function () {
-  test("Function works given proper data", function () {
-    const dataToFilter = {
-      nameLike: {
-        data: "net",
-        method: "ILIKE"
-      },
-      minEmployees: {
-        data: 30,
-        method: "<="
-      }
-    };
-    const jsToSql = {
-      nameLike: "name",
-      minEmployees: "num_employees",
-      maxEmployees: "num_employees"
-    };
+// describe("Test sqlForFilter", function () {
+//   test("Function works given proper data", function () {
+//     const dataToFilter = {
+//       nameLike: {
+//         data: "net",
+//         method: "ILIKE"
+//       },
+//       minEmployees: {
+//         data: 30,
+//         method: "<="
+//       }
+//     };
+//     const jsToSql = {
+//       nameLike: "name",
+//       minEmployees: "num_employees",
+//       maxEmployees: "num_employees"
+//     };
 
-    const results = sqlForFilter(dataToFilter, jsToSql);
+//     const results = sqlForFilter(dataToFilter, jsToSql);
 
-    expect(results).toEqual({
-      filterCols: 'WHERE name ILIKE $1 AND num_employees <= $2',
-      values: ["net", 30]
-    });
-  });
+//     expect(results).toEqual({
+//       filterCols: 'WHERE name ILIKE $1 AND num_employees <= $2',
+//       values: ["net", 30]
+//     });
+//   });
 
-  test("Function does not include AND with one piece of data", function () {
-    const dataToFilter = {
-      name: {
-        data: "and",
-        method: "ILIKE"
-      }
-    };
-    const jsToSql = {
-      nameLike: "name",
-      minEmployees: "num_employees",
-      maxEmployees: "num_employees"
-    };
+// test("Function does not include AND with one piece of data", function () {
+//   const dataToFilter = {
+//     name: {
+//       data: "and",
+//       method: "ILIKE"
+//     }
+//   };
+//   const jsToSql = {
+//     nameLike: "name",
+//     minEmployees: "num_employees",
+//     maxEmployees: "num_employees"
+//   };
 
-    const results = sqlForFilter(dataToFilter, jsToSql);
+//   const results = sqlForFilter(dataToFilter, jsToSql);
 
-    expect(results).toEqual({
-      filterCols: 'WHERE name ILIKE $1',
-      values: ["and"]
-    });
-  });
+//   expect(results).toEqual({
+//     filterCols: 'WHERE name ILIKE $1',
+//     values: ["and"]
+//   });
+// });
 
-  test("function throws bad request error if not given data", function () {
-    expect(() => {
-      sqlForPartialUpdate({}, {});
-    }).toThrow(BadRequestError);
-  });
-});
+// test("function throws bad request error if not given data", function () {
+//   expect(() => {
+//     sqlForPartialUpdate({}, {});
+//   }).toThrow(BadRequestError);
+// });
+// });

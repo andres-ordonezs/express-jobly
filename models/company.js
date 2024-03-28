@@ -72,7 +72,7 @@ class Company {
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    */
-
+  // TODO: Have only one find() method
   static async findFiltered(filter) {
     const companiesRes = await db.query(
       `SELECT handle,

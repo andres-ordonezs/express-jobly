@@ -80,7 +80,10 @@ function sqlForFilter(dataToFilter, jsToSql) {
  * returns an object of dataToFilter and jsToSql for sqlForFilter
  *
  */
-
+// TODO: Include examples on docstring + use equal rather than startsWith
+//TODO: Move this method to Company class
+// TODO: Use object destructuring for each key: namelike, etc.
+// TODO: Include min<max employees validation
 function createFilterData(queryData) {
   const jsToSql = {
     nameLike: "name",

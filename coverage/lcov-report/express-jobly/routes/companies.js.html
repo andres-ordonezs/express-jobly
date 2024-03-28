@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">82.97% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>39/47</span>
+                <span class='fraction'>47/47</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">46.15% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>6/13</span>
+                <span class='fraction'>13/13</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">87.5% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>7/8</span>
+                <span class='fraction'>8/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">84.09% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>37/44</span>
+                <span class='fraction'>44/44</span>
             </div>
         
             
@@ -258,34 +258,34 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -403,21 +403,21 @@ router.get("/", async function (req, res, next) {
 &nbsp;
   let companies;
 &nbsp;
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (!results.valid) {
-    const errs = <span class="cstat-no" title="statement not covered" >results.errors.map(<span class="fstat-no" title="function not covered" >e </span>=&gt; <span class="cstat-no" title="statement not covered" >e.stack)</span>;</span>
-<span class="cstat-no" title="statement not covered" >    throw new BadRequestError(errs);</span>
+  if (!results.valid) {
+    const errs = results.errors.map(e =&gt; e.stack);
+    throw new BadRequestError(errs);
   }
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (Object.keys(req.query).length !== 0) {
-<span class="cstat-no" title="statement not covered" >    if((req.query.minEmployees &amp;&amp; req.query.maxEmployees) &amp;&amp;</span>
+  if (Object.keys(req.query).length !== 0) {
+    if((req.query.minEmployees &amp;&amp; req.query.maxEmployees) &amp;&amp;
       (parseInt(req.query.minEmployees) &gt; parseInt(req.query.maxEmployees))) {
-<span class="cstat-no" title="statement not covered" >        throw new BadRequestError("minEmployees must be less than maxEmployees");</span>
+        throw new BadRequestError("minEmployees must be less than maxEmployees");
     }
 &nbsp;
-    const {dataToFilter, jsToSql} = <span class="cstat-no" title="statement not covered" >createFilterData(req.query);</span>
+    const {dataToFilter, jsToSql} = createFilterData(req.query);
 &nbsp;
-    const result = <span class="cstat-no" title="statement not covered" >sqlForFilter(dataToFilter, jsToSql);</span>
+    const result = sqlForFilter(dataToFilter, jsToSql);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    companies = await Company.findFiltered(result);</span>
+    companies = await Company.findFiltered(result);
 &nbsp;
   } else {
     companies = await Company.findAll();
@@ -484,7 +484,7 @@ module.exports = router;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2024-03-28T00:00:40.127Z
+                at 2024-03-28T00:45:08.814Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

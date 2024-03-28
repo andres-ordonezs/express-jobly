@@ -22,6 +22,7 @@ function authenticateJWT(req, res, next) {
 
     try {
       res.locals.user = jwt.verify(token, SECRET_KEY);
+      console.log("***************************************** user", res.locals.user);
     } catch (err) {
       /* ignore invalid tokens (but don't store user!) */
     }
@@ -40,8 +41,15 @@ function ensureLoggedIn(req, res, next) {
   throw new UnauthorizedError();
 }
 
+function ensureIsAdmin(req, res, next) {
+  console.log("***************************************** user", res.locals.user);
+  if(res.locals.user?.isAdmin) return next();
+  throw new UnauthorizedError("Must be admin for this route");
+}
+
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
+  ensureIsAdmin
 };

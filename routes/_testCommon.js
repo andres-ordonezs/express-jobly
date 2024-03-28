@@ -74,8 +74,11 @@ async function commonAfterAll() {
   await db.end();
 }
 
+const adminToken = createToken({username: "admin", isAdmin: true});
 
-const u1Token = createToken({ username: "u1", isAdmin: false });
+// const nonAdminToken = jwt.sign(nonAdminPayload.SECRET_KEY);
+
+const nonAdminToken = createToken({ username: "u1", isAdmin: false });
 
 
 module.exports = {
@@ -83,5 +86,6 @@ module.exports = {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  u1Token,
+  adminToken,
+  nonAdminToken
 };

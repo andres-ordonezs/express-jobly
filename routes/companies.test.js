@@ -10,7 +10,8 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
-  u1Token,
+  adminToken,
+  nonAdminToken
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
@@ -21,6 +22,7 @@ afterAll(commonAfterAll);
 /************************************** POST /companies */
 
 describe("POST /companies", function () {
+  console.log("********************************* token", adminToken);
   const newCompany = {
     handle: "new",
     name: "New",
@@ -33,7 +35,7 @@ describe("POST /companies", function () {
     const resp = await request(app)
       .post("/companies")
       .send(newCompany)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(201);
     expect(resp.body).toEqual({
       company: newCompany,
@@ -47,7 +49,7 @@ describe("POST /companies", function () {
         handle: "new",
         numEmployees: 10,
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -58,8 +60,17 @@ describe("POST /companies", function () {
         ...newCompany,
         logoUrl: "not-a-url",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
+  });
+
+  test("user is unauthorized", async function () {
+    const resp = await request(app)
+      .post("/companies")
+      .send(newCompany)
+      .set("authorization", `Bearer ${nonAdminToken}`);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body.error.message).toEqual("Must be admin for this route");
   });
 });
 
@@ -118,8 +129,8 @@ describe("GET /companies", function () {
     );
     expect(resp.statusCode).toEqual(200);
   });
-  // TODO: Be more specific with test naming
-  test("Wrong filters passed", async function () {
+
+  test("incorrect filter data", async function () {
     const resp = await request(app).get("/companies").query(
       {
         name: "C",
@@ -195,7 +206,7 @@ describe("PATCH /companies/:handle", function () {
       .send({
         name: "C1-new",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.body).toEqual({
       company: {
         handle: "c1",
@@ -222,7 +233,7 @@ describe("PATCH /companies/:handle", function () {
       .send({
         name: "new nope",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
   });
 
@@ -232,7 +243,7 @@ describe("PATCH /companies/:handle", function () {
       .send({
         handle: "c1-new",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
   });
 
@@ -242,8 +253,19 @@ describe("PATCH /companies/:handle", function () {
       .send({
         logoUrl: "not-a-url",
       })
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(400);
+  });
+
+  test("user is unauthorized", async function () {
+    const resp = await request(app)
+      .patch(`/companies/c1`)
+      .send({
+        name: "C1-new",
+      })
+      .set("authorization", `Bearer ${nonAdminToken}`);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body.error.message).toEqual("Must be admin for this route");
   });
 });
 
@@ -253,7 +275,7 @@ describe("DELETE /companies/:handle", function () {
   test("works for users", async function () {
     const resp = await request(app)
       .delete(`/companies/c1`)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.body).toEqual({ deleted: "c1" });
   });
 
@@ -266,7 +288,15 @@ describe("DELETE /companies/:handle", function () {
   test("not found for no such company", async function () {
     const resp = await request(app)
       .delete(`/companies/nope`)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${adminToken}`);
     expect(resp.statusCode).toEqual(404);
+  });
+
+  test("user is unauthorized", async function () {
+    const resp = await request(app)
+      .delete(`/companies/c1`)
+      .set("authorization", `Bearer ${nonAdminToken}`);
+    expect(resp.statusCode).toEqual(401);
+    expect(resp.body.error.message).toEqual("Must be admin for this route");
   });
 });

@@ -12,12 +12,15 @@ const {
   commonBeforeEach,
   commonAfterEach,
   commonAfterAll,
+  jobs
 } = require("./_testCommon");
 
 beforeAll(commonBeforeAll);
 beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
+
+/************************************** create */
 
 describe("Create job", function () {
   test("works", async function () {
@@ -48,6 +51,63 @@ describe("Create job", function () {
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof BadRequestError).toBeTruthy();
+    }
+  });
+});
+
+/************************************** findAll() */
+
+describe("Get list of jobs", function () {
+  test("works", async function () {
+    const result = await Job.findAll();
+    expect(result).toEqual([
+      {
+        id: expect.any(Number),
+        title: "j1",
+        salary: 1000,
+        equity: "0.5",
+        company_handle: "c1",
+      },
+      {
+        id: expect.any(Number),
+        title: "j2",
+        salary: 2000,
+        equity: "0.5",
+        company_handle: "c2",
+      },
+      {
+        id: expect.any(Number),
+        title: "j3",
+        salary: 3000,
+        equity: "0.2",
+        company_handle: "c3",
+      },
+    ]);
+  });
+});
+
+/************************************** get job */
+
+describe("Gets a given job", function () {
+  console.log("****************jobs: ", jobs);
+  test("works", async function () {
+    //  TODO: check how to get id
+    const result = await Job.get(id);
+    expect(result).toEqual({
+      id: expect.any(Number),
+      title: "j1",
+      salary: 1000,
+      equity: "0.5",
+      company_handle: "c1"
+    });
+  });
+
+  test("wrong - job is not found", async function () {
+    try {
+      await Job.get("nope");
+      throw new Error("fail test, you shouldn't get here");
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
 });

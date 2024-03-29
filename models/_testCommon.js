@@ -39,9 +39,9 @@ async function commonBeforeAll() {
              ('j3', 3000, 0.2, 'c3')
       RETURNING id`);
 
-  jobs.push(results.rows);
-
-  console.log('******** jobs 1:', jobs);
+  jobs.push(results.rows[0]);
+  jobs.push(results.rows[1]);
+  jobs.push(results.rows[2]);
 }
 
 // Starts a transaction - any changes that happened during testing

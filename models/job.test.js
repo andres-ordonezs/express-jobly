@@ -20,6 +20,8 @@ beforeEach(commonBeforeEach);
 afterEach(commonAfterEach);
 afterAll(commonAfterAll);
 
+console.log("Jobs: ", jobs);
+
 /************************************** create */
 
 describe("Create job", function () {
@@ -89,10 +91,8 @@ describe("Get list of jobs", function () {
 /************************************** get job */
 
 describe("Gets a given job", function () {
-  console.log("****************jobs: ", jobs);
   test("works", async function () {
-    //  TODO: check how to get id
-    const result = await Job.get(id);
+    const result = await Job.get(jobs[0].id);
     expect(result).toEqual({
       id: expect.any(Number),
       title: "j1",
@@ -104,10 +104,65 @@ describe("Gets a given job", function () {
 
   test("wrong - job is not found", async function () {
     try {
-      await Job.get("nope");
+      await Job.get(0);
       throw new Error("fail test, you shouldn't get here");
     } catch (err) {
       expect(err instanceof NotFoundError).toBeTruthy();
     }
   });
+});
+
+/************************************** update job */
+
+describe("Update a given job", function () {
+  test("works", async function () {
+    const result = await Job.update(jobs[0].id, {
+      title: "Test",
+      salary: 500,
+      equity: 0.25
+    });
+
+    expect(result).toEqual({
+      id: expect.any(Number),
+      title: "Test",
+      salary: 500,
+      equity: "0.25",
+      company_handle: "c1"
+    });
+  });
+
+  test("wrong - job is not found", async function () {
+    try {
+      await Job.update(0, {
+        title: "Test",
+        salary: 500,
+        equity: 0.25
+      });
+      throw new Error("fail test, you shouldn't get here");
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  });
+});
+
+/************************************** remove */
+
+describe("Removes a given job", function () {
+  test("works", async function () {
+    const deleteRes = await Job.remove(jobs[0].id);
+    const selectRes = await db.query(
+      `SELECT id FROM jobs WHERE id='${jobs[0].id}'`);
+
+    expect(deleteRes).toEqual(jobs[0]);
+    expect(selectRes.rows.length).toEqual(0);
+  });
+
+  test("wrong - job is not found", async function () {
+    try {
+      await Job.remove(0);
+      throw new Error("fail test, you shouldn't get here");
+    } catch (err) {
+      expect(err instanceof NotFoundError).toBeTruthy();
+    }
+  })
 });

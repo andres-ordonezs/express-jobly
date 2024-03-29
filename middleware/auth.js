@@ -18,11 +18,11 @@ const { UnauthorizedError } = require("../expressError");
 function authenticateJWT(req, res, next) {
   const authHeader = req.headers?.authorization;
   if (authHeader) {
+    // token is removing 'Bearer' so we can get the payload in oBJ FORM
     const token = authHeader.replace(/^[Bb]earer /, "").trim();
 
     try {
       res.locals.user = jwt.verify(token, SECRET_KEY);
-      console.log("***************************************** user", res.locals.user);
     } catch (err) {
       /* ignore invalid tokens (but don't store user!) */
     }
@@ -41,15 +41,36 @@ function ensureLoggedIn(req, res, next) {
   throw new UnauthorizedError();
 }
 
+/** Middleware to use when user must be admin
+ *
+ * If not, raises Unauthorized.
+ */
 function ensureIsAdmin(req, res, next) {
-  console.log("***************************************** user", res.locals.user);
-  if(res.locals.user?.isAdmin) return next();
+  if (res.locals.user?.username &&
+    (res.locals.user?.isAdmin === true)) {
+    return next();
+  }
   throw new UnauthorizedError("Must be admin for this route");
+}
+
+/** Middleware to use when user must be admin or the specified user
+ *
+ * If not, raises Unauthorized.
+ */
+function ensureIsAdminOrUser(req, res, next) {
+  if (res.locals.user?.username &&
+    (req.params.username === res.locals.user?.username ||
+      res.locals.user?.isAdmin === true)) {
+    return next();
+  }
+
+  throw new UnauthorizedError("Must be logged in as admin or desired user");
 }
 
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
-  ensureIsAdmin
+  ensureIsAdmin,
+  ensureIsAdminOrUser
 };

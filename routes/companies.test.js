@@ -22,7 +22,6 @@ afterAll(commonAfterAll);
 /************************************** POST /companies */
 
 describe("POST /companies", function () {
-  console.log("********************************* token", adminToken);
   const newCompany = {
     handle: "new",
     name: "New",
